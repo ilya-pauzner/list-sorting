@@ -1,43 +1,47 @@
 #include<iostream>
 
-using namespace std;
+using std::cin;
+using std::cout;
 
+template<typename T>
 class List {
 private:
     class Node {
     public:
-        int value;
-        Node *right;
+        T value_;
+        Node *right_;
 
-        Node(const int &v = int()) {
-            value = v;
-            right = nullptr;
+        explicit Node(const T &v = T()) {
+            value_ = v;
+            right_ = nullptr;
         }
 
         bool operator==(const Node &other) const {
-            return value == other.value && right == other.right;
+            return value_ == other.value_ && right_ == other.right_;
         }
     };
 
 public:
     class Iterator {
     private:
-        Node *cur;
+        Node *cur_;
 
     public:
-        Iterator(Node *curr) : cur(curr) {}
+        typedef T value_type;
 
-        int &operator*() {
-            return cur->value;
+        explicit Iterator(Node *curr) : cur_(curr) {}
+
+        T &operator*() {
+            return cur_->value_;
         }
 
         Iterator &operator++() {
-            cur = cur->right;
+            cur_ = cur_->right_;
             return *this;
         }
 
         bool operator==(const Iterator &other) const {
-            return (*cur) == *(other.cur);
+            return (*cur_) == *(other.cur_);
         }
 
         bool operator!=(const Iterator &other) const {
@@ -45,15 +49,15 @@ public:
         }
     };
 
-    // [first; last)
-    Node *first;
-    Node *last;
-    int Size;
+    // [first_; last_)
+    Node *first_;
+    Node *last_;
+    int size_;
 
-    List(int size = 0) {
-        first = new Node;
-        last = first;
-        Size = 0;
+    explicit List(size_t size = 0) {
+        first_ = new Node;
+        last_ = first_;
+        size_ = 0;
         while (size) {
             push_front(0);
             --size;
@@ -61,102 +65,108 @@ public:
     }
 
     ~List() {
-        Node *cur = first;
-        while (cur != last) {
+        Node *cur = first_;
+        while (cur != last_) {
             auto tmp = cur;
-            cur = cur->right;
+            cur = cur->right_;
             delete tmp;
         }
-        delete last;
+        delete last_;
     }
 
-    void push_front(const int &value) {
-        Node *new_first = new Node(value);
-        new_first->right = first;
-        first = new_first;
-        ++Size;
+    void push_front(const T &value) {
+        auto *new_first = new Node(value);
+        new_first->right_ = first_;
+        first_ = new_first;
+        ++size_;
     }
 
     Iterator begin() {
-        return Iterator(first);
+        return Iterator(first_);
     }
 
     Iterator end() {
-        return Iterator(last);
+        return Iterator(last_);
     }
 
     int size() const {
-        return Size;
+        return size_;
     }
 };
 
-int _distance(List::Iterator f, List::Iterator l) {
-    int ans = 0;
-    while (f != l) {
-        ++f;
+template<typename Iter>
+size_t distance(Iter first, Iter last) {
+    size_t ans = 0;
+    while (first != last) {
+        ++first;
         ++ans;
     }
     return ans;
 }
 
-void _advance(List::Iterator &l, int d) {
-    while (d) {
-        ++l;
-        --d;
+template<typename Iter>
+void advance(Iter &it, int delta) {
+    while (delta != 0) {
+        ++it;
+        --delta;
     }
 }
 
-List::Iterator _copy(List::Iterator f, List::Iterator l, List::Iterator out) {
-    while (f != l) {
-        *out = *f;
+template<typename Iter>
+Iter copy(Iter first, Iter last, Iter out) {
+    while (first != last) {
+        *out = *first;
         ++out;
-        ++f;
+        ++first;
     }
     return out;
 }
 
-List::Iterator _merge(List::Iterator first1, List::Iterator last1,
-                      List::Iterator first2, List::Iterator last2,
-                      List::Iterator d_first) {
-    for (; first1 != last1; ++d_first) {
-        if (first2 == last2) {
-            return _copy(first1, last1, d_first);
+template<typename Iter>
+Iter merge(Iter a_first, Iter a_last,
+           Iter b_first, Iter b_last,
+           Iter ans_first) {
+    for (; a_first != a_last; ++ans_first) {
+        if (b_first == b_last) {
+            return copy(a_first, a_last, ans_first);
         }
-        if (*first2 < *first1) {
-            *d_first = *first2;
-            ++first2;
+        if (*b_first < *a_first) {
+            *ans_first = *b_first;
+            ++b_first;
         } else {
-            *d_first = *first1;
-            ++first1;
+            *ans_first = *a_first;
+            ++a_first;
         }
     }
-    return _copy(first2, last2, d_first);
+    return copy(b_first, b_last, ans_first);
 }
 
-void mergesort(List::Iterator first, List::Iterator last) {
-    if (_distance(first, last) > 1) {
-        int m = _distance(first, last) / 2;
-        List buf(_distance(first, last));
-        auto it = first;
-        _advance(it, m);
-        mergesort(first, it);
-        mergesort(it, last);
-        _merge(first, it, it, last, buf.begin());
-        _copy(buf.begin(), buf.end(), first);
+template<typename Iter, typename T = typename Iter::value_type>
+void mergesort(Iter first, Iter last) {
+    if (distance(first, last) > 1) {
+        int m = distance(first, last) / 2;
+        List<T> buf(distance(first, last));
+        auto middle = first;
+        advance(middle, m);
+        mergesort(first, middle);
+        mergesort(middle, last);
+        merge(first, middle, middle, last, buf.begin());
+        copy(buf.begin(), buf.end(), first);
     }
 }
 
 int main() {
-    int n;
+    size_t n = 0;
     cin >> n;
-    List L;
-    for (int i = 0; i < n; ++i) {
-        int elem;
+    List<int> l;
+    for (size_t i = 0; i < n; ++i) {
+        int elem = 0;
         cin >> elem;
-        L.push_front(elem);
+        l.push_front(elem);
     }
-    mergesort(L.begin(), L.end());
-    for (auto elem : L) {
+    mergesort(l.begin(), l.end());
+    for (auto elem : l) {
         cout << elem << " ";
     }
 }
+
