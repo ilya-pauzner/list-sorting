@@ -8,40 +8,46 @@ class List {
 private:
     class Node {
     public:
-        T value_;
-        Node *right_;
+        T value;
+        Node *right;
 
         explicit Node(const T &v = T()) {
-            value_ = v;
-            right_ = nullptr;
+            value = v;
+            right = nullptr;
         }
 
         bool operator==(const Node &other) const {
-            return value_ == other.value_ && right_ == other.right_;
+            return value == other.value && right == other.right;
         }
     };
+
+    // [first; last)
+    Node *first;
+    Node *last;
+    int size;
 
 public:
     class Iterator {
     private:
-        Node *cur_;
+        Node *cur;
 
     public:
         typedef T value_type;
 
-        explicit Iterator(Node *curr) : cur_(curr) {}
+        explicit Iterator(Node *curr)
+                : cur(curr) {}
 
         T &operator*() {
-            return cur_->value_;
+            return cur->value;
         }
 
         Iterator &operator++() {
-            cur_ = cur_->right_;
+            cur = cur->right;
             return *this;
         }
 
         bool operator==(const Iterator &other) const {
-            return (*cur_) == *(other.cur_);
+            return (*cur) == *(other.cur);
         }
 
         bool operator!=(const Iterator &other) const {
@@ -49,48 +55,43 @@ public:
         }
     };
 
-    // [first_; last_)
-    Node *first_;
-    Node *last_;
-    int size_;
-
-    explicit List(size_t size = 0) {
-        first_ = new Node;
-        last_ = first_;
-        size_ = 0;
-        while (size) {
+    explicit List(size_t list_size = 0) {
+        first = new Node;
+        last = first;
+        size = list_size;
+        while (list_size) {
             push_front(0);
-            --size;
+            --list_size;
         }
     }
 
     ~List() {
-        Node *cur = first_;
-        while (cur != last_) {
+        Node *cur = first;
+        while (cur != last) {
             auto tmp = cur;
-            cur = cur->right_;
+            cur = cur->right;
             delete tmp;
         }
-        delete last_;
+        delete last;
     }
 
     void push_front(const T &value) {
         auto *new_first = new Node(value);
-        new_first->right_ = first_;
-        first_ = new_first;
-        ++size_;
+        new_first->right = first;
+        first = new_first;
+        ++size;
     }
 
     Iterator begin() {
-        return Iterator(first_);
+        return Iterator(first);
     }
 
     Iterator end() {
-        return Iterator(last_);
+        return Iterator(last);
     }
 
-    int size() const {
-        return size_;
+    int get_size() const {
+        return size;
     }
 };
 
