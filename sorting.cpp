@@ -32,7 +32,7 @@ public:
         Node *cur;
 
     public:
-        typedef T value_type;
+        typedef List<T> list_type;
 
         explicit Iterator(Node *curr)
                 : cur(curr) {}
@@ -149,20 +149,26 @@ Iter merge(Iter a_first, Iter a_last,
     return copy(b_first, b_last, ans_first);
 }
 
-template<typename Iter, typename T = typename Iter::value_type>
-void mergesort(Iter first, Iter last) {
+template<typename Iter, typename LList = typename Iter::list_type>
+void _mergesort(Iter first, Iter last, LList& buf) {
     size_t dist = distance(first, last);
     if (dist > 1) {
-        List<T> buf(dist);
         auto middle = first;
         advance_forward(middle, dist / 2);
 
-        mergesort(first, middle);
-        mergesort(middle, last);
-        merge(first, middle, middle, last, buf.begin());
-        copy(buf.begin(), buf.end(), first);
+        _mergesort(first, middle, buf);
+        _mergesort(middle, last, buf);
+        Iter It = merge(first, middle, middle, last, buf.begin());
+        copy(buf.begin(), It, first);
     }
 }
+
+template<typename Iter, typename LList = typename Iter::list_type>
+void mergesort(Iter first, Iter last) {
+    LList buf(distance(first, last));
+    _mergesort(first, last, buf);
+}
+
 
 int main() {
     size_t n = 0;
