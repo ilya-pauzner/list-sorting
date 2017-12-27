@@ -24,7 +24,7 @@ private:
     // [first; last)
     Node *first;
     Node *last;
-    int size;
+    size_t size;
 
 public:
     class Iterator {
@@ -82,6 +82,13 @@ public:
         ++size;
     }
 
+    void pop_front() {
+        Node *old_first = first;
+        first = first->right;
+        delete old_first;
+        --size;
+    }
+
     Iterator begin() {
         return Iterator(first);
     }
@@ -90,7 +97,7 @@ public:
         return Iterator(last);
     }
 
-    int get_size() const {
+    size_t get_size() const {
         return size;
     }
 };
@@ -106,7 +113,7 @@ size_t distance(Iter first, Iter last) {
 }
 
 template<typename Iter>
-void advance(Iter &it, int delta) {
+void advance_forward(Iter &it, size_t delta) {
     while (delta != 0) {
         ++it;
         --delta;
@@ -144,11 +151,12 @@ Iter merge(Iter a_first, Iter a_last,
 
 template<typename Iter, typename T = typename Iter::value_type>
 void mergesort(Iter first, Iter last) {
-    if (distance(first, last) > 1) {
-        int m = distance(first, last) / 2;
-        List<T> buf(distance(first, last));
+    size_t dist = distance(first, last);
+    if (dist > 1) {
+        List<T> buf(dist);
         auto middle = first;
-        advance(middle, m);
+        advance_forward(middle, dist / 2);
+
         mergesort(first, middle);
         mergesort(middle, last);
         merge(first, middle, middle, last, buf.begin());
@@ -170,4 +178,3 @@ int main() {
         cout << elem << " ";
     }
 }
-
